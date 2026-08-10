@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>对照日</title>
+    <meta name="theme-color" content="#1f2630" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">时</div>
+          <div>
+            <h1>对照日</h1>
+            <p>看见今天的我，和过去的我。</p>
+          </div>
+        </div>
+
+        <nav class="nav-tabs" aria-label="主要视图">
+          <button class="nav-tab active" data-view="write" type="button">写今天</button>
+          <button class="nav-tab" data-view="compare" type="button">时间对照</button>
+          <button class="nav-tab" data-view="archive" type="button">日记库</button>
+          <button class="nav-tab" data-view="sync" type="button">云同步</button>
+        </nav>
+
+        <section class="mini-panel">
+          <p class="panel-label">今日情绪</p>
+          <div class="today-pulse" id="todayPulse">
+            <span class="pulse-dot calm"></span>
+            <strong>还没有记录</strong>
+          </div>
+          <div class="storage-state" id="storageState">本地缓存已开启</div>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="kicker" id="viewKicker">现在</p>
+            <h2 id="viewTitle">写下今天</h2>
+          </div>
+          <div class="date-chip" id="todayChip"></div>
+        </header>
+
+        <section class="view active" id="writeView" aria-label="写日记">
+          <form class="editor" id="entryForm">
+            <div class="field-row">
+              <label>
+                日期
+                <input id="entryDate" type="date" required />
+              </label>
+              <label>
+                心情
+                <select id="entryMood">
+                  <option value="sunny">☀️ 明亮</option>
+                  <option value="happy">😊 开心</option>
+                  <option value="grateful">💛 感恩</option>
+                  <option value="hopeful">🌱 期待</option>
+                  <option value="calm">🌊 平静</option>
+                  <option value="focused">🎯 专注</option>
+                  <option value="excited">🔥 激动</option>
+                  <option value="tired">🪫 疲惫</option>
+                  <option value="anxious">⚡ 焦虑</option>
+                  <option value="lonely">🌙 孤独</option>
+                  <option value="rainy">🌧️ 低落</option>
+                  <option value="angry">🟥 生气</option>
+                  <option value="cloudy">☁️ 迷茫</option>
+                </select>
+              </label>
+              <label>
+                强度
+                <input id="entryEnergy" type="range" min="1" max="10" value="6" />
+              </label>
+            </div>
+
+            <label class="title-field">
+              标题
+              <input id="entryTitle" type="text" maxlength="48" placeholder="比如：重新开始的一天" />
+            </label>
+
+            <label class="body-field">
+              内容
+              <textarea id="entryBody" rows="11" placeholder="今天发生了什么？我怎么感受它？"></textarea>
+            </label>
+
+            <div class="actions">
+              <button class="primary" type="submit">保存日记</button>
+              <button class="ghost" id="newEntryButton" type="button">新建空白</button>
+            </div>
+          </form>
+
+          <section class="insight-strip" id="quickInsight"></section>
+        </section>
+
+        <section class="view" id="compareView" aria-label="时间对照">
+          <div class="compare-controls">
+            <div class="segmented" role="tablist" aria-label="对照类型">
+              <button class="segment active" data-compare="year" type="button">去年今日</button>
+              <button class="segment" data-compare="week" type="button">上周同日</button>
+              <button class="segment" data-compare="custom" type="button">自定义</button>
+            </div>
+            <label class="compare-date">
+              今天
+              <input id="compareBaseDate" type="date" />
+            </label>
+            <label class="compare-date custom-only">
+              对照日
+              <input id="compareTargetDate" type="date" />
+            </label>
+          </div>
+
+          <section class="mood-verdict" id="moodVerdict"></section>
+
+          <div class="compare-grid">
+            <article class="compare-card" id="currentCard"></article>
+            <article class="compare-card" id="pastCard"></article>
+          </div>
+        </section>
+
+        <section class="view" id="archiveView" aria-label="日记库">
+          <div class="archive-header">
+            <label>
+              搜索
+              <input id="searchInput" type="search" placeholder="标题、内容或日期" />
+            </label>
+            <div class="archive-actions">
+              <button class="ghost" id="exportBackupButton" type="button">导出备份</button>
+              <button class="ghost" id="importBackupButton" type="button">导入备份</button>
+              <button class="ghost danger" id="resetDemoButton" type="button">恢复示例数据</button>
+              <input id="importBackupInput" type="file" accept="application/json" hidden />
+            </div>
+          </div>
+          <div class="entry-list" id="entryList"></div>
+        </section>
+
+        <section class="view" id="syncView" aria-label="云同步">
+          <div class="sync-panel">
+            <div class="sync-status">
+              <div>
+                <p class="panel-label">同步状态</p>
+                <h3 id="syncStatusTitle">本地优先</h3>
+              </div>
+              <span class="sync-pill" id="syncPill">未连接</span>
+            </div>
+
+            <div class="sync-form">
+              <label>
+                GitHub Token
+                <input id="syncToken" type="password" autocomplete="off" placeholder="ghp_..." />
+              </label>
+              <label>
+                Gist ID
+                <input id="syncGistId" type="text" autocomplete="off" placeholder="首次推送后自动生成" />
+              </label>
+              <label class="toggle-row">
+                <input id="syncAuto" type="checkbox" />
+                <span>保存日记后自动同步</span>
+              </label>
+            </div>
+
+            <div class="sync-actions">
+              <button class="ghost" id="saveSyncSettingsButton" type="button">保存同步设置</button>
+              <button class="ghost" id="createLaunchLinkButton" type="button">生成免输入链接</button>
+              <button class="primary" id="syncNowButton" type="button">立即同步</button>
+              <button class="ghost" id="pullCloudButton" type="button">从云端拉取</button>
+              <button class="ghost" id="pushCloudButton" type="button">推送到云端</button>
+              <button class="ghost danger" id="clearSyncButton" type="button">清除同步设置</button>
+            </div>
+
+            <div class="launch-link-box" id="launchLinkBox" hidden>
+              <label>
+                免输入启动链接
+                <textarea id="launchLinkText" rows="3" readonly></textarea>
+              </label>
+              <button class="ghost" id="copyLaunchLinkButton" type="button">复制链接</button>
+            </div>
+
+            <div class="sync-log" id="syncLog">数据仍会默认保存在本地浏览器。</div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
